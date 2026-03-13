@@ -130,7 +130,7 @@ const AdminContacts = () => {
       console.log(error);
       updateToastError(toastId, "Unable to update contact");
     }
-  };y
+  };
 
   const handleDelete = async (id) => {
     const toastId = `admin-contact-delete-${id}`;

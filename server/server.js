@@ -1,5 +1,5 @@
 const express = require("express");
-require("dotenv").config();
+require("dotenv").config({ override: true });
 const cors = require("cors");
 const app = express();
 const authRouter = require("./router/auth-router");

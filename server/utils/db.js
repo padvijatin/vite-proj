@@ -1,19 +1,28 @@
 const mongoose = require("mongoose");
 
+const normalizeMongoUri = (value = "") =>
+  String(value)
+    .trim()
+    .replace(/^['"]|['"]$/g, "")
+    .replace(/^(DB_URI|MONGO_URI|LOCAL_DB_URI)\s*=\s*/i, "");
+
 const resolveMongoUri = () => {
   const target = (process.env.DB_TARGET || "local").toLowerCase();
+  const dbUri = normalizeMongoUri(process.env.DB_URI);
+  const mongoUri = normalizeMongoUri(process.env.MONGO_URI);
+  const localDbUri = normalizeMongoUri(process.env.LOCAL_DB_URI);
 
-  if (process.env.DB_URI) {
-    return { uri: process.env.DB_URI, source: "DB_URI" };
+  if (dbUri) {
+    return { uri: dbUri, source: "DB_URI" };
   }
 
   if (target === "cloud") {
-    return { uri: process.env.MONGO_URI, source: "MONGO_URI" };
+    return { uri: mongoUri, source: "MONGO_URI" };
   }
 
   return {
-    uri: process.env.LOCAL_DB_URI || process.env.MONGO_URI,
-    source: process.env.LOCAL_DB_URI ? "LOCAL_DB_URI" : "MONGO_URI",
+    uri: localDbUri || mongoUri,
+    source: localDbUri ? "LOCAL_DB_URI" : "MONGO_URI",
   };
 };
 
@@ -39,7 +48,7 @@ const connectDb = async () => {
 
     console.log(`connection successful to DB (${source}) -> ${mongoose.connection.name}`);
   } catch (error) {
-    const localUri = process.env.LOCAL_DB_URI;
+    const localUri = normalizeMongoUri(process.env.LOCAL_DB_URI);
     const shouldTryLocalFallback =
       shouldAllowLocalFallback() &&
       source !== "LOCAL_DB_URI" &&
